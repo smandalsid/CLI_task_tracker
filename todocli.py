@@ -3,6 +3,8 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from database import *
+
 console=Console()
 
 app=typer.Typer()
@@ -11,28 +13,35 @@ app=typer.Typer()
 @app.command(short_help="Adds an item")
 def add(task: str, category: str):
     typer.echo(f"Adding {task}, {category}")
+
+    todo=Todo(task, category)
+    insert_todo(todo)
     show()
 
 @app.command(short_help="Deletes an item")
 def delete(position: int):
     typer.echo(f"Deleting {position}")
+    delete_todo(position=position-1)
     show()
 
 @app.command(short_help="Updates an item")
 def update(position:int, task:str=None, category:str=None):
     typer.echo(f"Updating {position}")
+    update_todo(position-1, task, category)
     show()
 
 
 @app.command(short_help="Complete the function")
 def complete(position:int):
     typer.echo(f"Complete: {position}")
+    complete_todo(position-1)
     show()
 
 
 @app.command(short_help="Show the tasks")
 def show():
-    tasks=[("TODO1", "sports"), ("TODO2", "study")]
+    # tasks=[("TODO1", "sports"), ("TODO2", "study")]
+    tasks=get_all_todos()
     console.print("[bold magenta]Todos[/bold magenta]!", "💻")
 
     table=Table(show_header=True, header_style="bold blue")
@@ -48,9 +57,9 @@ def show():
         return 'white'
 
     for idx, task in enumerate(tasks, start=1):
-        c=get_category_color(task[1])
-        is_done_str='✅' if True==2 else "❌"
-        table.add_row(str(idx), task[0], f'[{c}]{task[1]}[/{c}]', is_done_str)
+        c=get_category_color(task.category)
+        is_done_str='✅' if task.status==2 else "❌"
+        table.add_row(str(idx), task.task, f'[{c}]{task.category}[/{c}]', is_done_str)
     console.print(table)
 
 if __name__=="__main__":
